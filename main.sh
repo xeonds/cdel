@@ -1,15 +1,10 @@
-function cd_hook() {
-    # The normal cd
-    if [ $# == 0 ]; then
-        cd
+function cd() {
+    builtin cd "$@"
+    if [[ "$PWD" == "$OLDPWD"* ]]; then
+        if [[ -f "$PWD/.bashrc" ]]; then
+            exec bash --rcfile <(cat ~/.bashrc "$PWD/.bashrc")
+        fi
     else
-        cd "$1" 
-	fi
-    # If the dir contains bashrc, launch the sub shell and load it
-    if [ -f ".bashrc" ] && [ "$(pwd)" != "$(getent passwd $USER | awk -F ':' '{print $6}')" ]; then
-        pushd .  > /dev/null
-        bash --init-file <(cat /etc/profile ~/.bashrc .bashrc)
+        exec bash --rcfile <(cat ~/.bashrc)
     fi
 }
-
-alias cd='cd_hook'
